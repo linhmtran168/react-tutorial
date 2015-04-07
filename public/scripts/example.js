@@ -10,11 +10,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-var converter = new Showdown.converter();
+import marked from 'marked';
+import React from 'react/addons';
 
-var Comment = React.createClass({
-  render: function() {
-    var rawMarkup = converter.makeHtml(this.props.children.toString());
+const $ = require('jquery');
+
+
+class Comment extends React.Component {
+  render() {
+    let rawMarkup = marked(this.props.children.toString());
     return (
       <div className="comment">
         <h2 className="commentAuthor">
@@ -24,25 +28,32 @@ var Comment = React.createClass({
       </div>
     );
   }
-});
+}
 
-var CommentBox = React.createClass({
-  loadCommentsFromServer: function() {
+class CommentBox extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { url: props.url, data: [], pollInterval: props.pollInterval };
+  }
+
+  loadCommentsFromServer() {
     $.ajax({
       url: this.props.url,
       dataType: 'json',
-      success: function(data) {
+      success: (data) => {
         this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
+      },
+      error: (xhr, status, err) => {
         console.error(this.props.url, status, err.toString());
-      }.bind(this)
+      }
     });
-  },
-  handleCommentSubmit: function(comment) {
-    var comments = this.state.data;
+  }
+
+  handleCommentSubmit(comment) {
+    let comments = this.state.data;
     comments.push(comment);
-    this.setState({data: comments}, function() {
+
+    this.setState({data: comments}, () => {
       // `setState` accepts a callback. To avoid (improbable) race condition,
       // `we'll send the ajax request right after we optimistically set the new
       // `state.
@@ -51,36 +62,35 @@ var CommentBox = React.createClass({
         dataType: 'json',
         type: 'POST',
         data: comment,
-        success: function(data) {
+        success: (data) => {
           this.setState({data: data});
-        }.bind(this),
-        error: function(xhr, status, err) {
+        },
+        error: (xhr, status, err) => {
           console.error(this.props.url, status, err.toString());
-        }.bind(this)
+        }
       });
     });
-  },
-  getInitialState: function() {
-    return {data: []};
-  },
-  componentDidMount: function() {
+  }
+
+  componentDidMount() {
     this.loadCommentsFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
-  },
-  render: function() {
+    setInterval(this.loadCommentsFromServer.bind(this), this.props.pollInterval);
+  }
+
+  render() {
     return (
       <div className="commentBox">
         <h1>Comments</h1>
         <CommentList data={this.state.data} />
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit.bind(this)} />
       </div>
     );
   }
-});
+}
 
-var CommentList = React.createClass({
-  render: function() {
-    var commentNodes = this.props.data.map(function(comment, index) {
+class CommentList extends React.Component {
+  render() {
+    let commentNodes = this.props.data.map((comment, index) => {
       return (
         // `key` is a React-specific concept and is not mandatory for the
         // purpose of this tutorial. if you're curious, see more here:
@@ -90,36 +100,38 @@ var CommentList = React.createClass({
         </Comment>
       );
     });
+
     return (
       <div className="commentList">
         {commentNodes}
       </div>
     );
   }
-});
+}
 
-var CommentForm = React.createClass({
-  handleSubmit: function(e) {
+class CommentForm extends React.Component {
+  handleSubmit(e) {
     e.preventDefault();
-    var author = React.findDOMNode(this.refs.author).value.trim();
-    var text = React.findDOMNode(this.refs.text).value.trim();
+    let author = React.findDOMNode(this.refs.author).value.trim();
+    let text = React.findDOMNode(this.refs.text).value.trim();
     if (!text || !author) {
       return;
     }
     this.props.onCommentSubmit({author: author, text: text});
     React.findDOMNode(this.refs.author).value = '';
     React.findDOMNode(this.refs.text).value = '';
-  },
-  render: function() {
+  }
+
+  render() {
     return (
-      <form className="commentForm" onSubmit={this.handleSubmit}>
+      <form className="commentForm" onSubmit={this.handleSubmit.bind(this)}>
         <input type="text" placeholder="Your name" ref="author" />
         <input type="text" placeholder="Say something..." ref="text" />
         <input type="submit" value="Post" />
       </form>
     );
   }
-});
+}
 
 React.render(
   <CommentBox url="comments.json" pollInterval={2000} />,
