@@ -22,6 +22,9 @@ if (process.env.NODE_ENV !== 'production') {
   defaultConfig.debug = true;
 }
 
+// ES6 feature that iojs support
+var ioES6 = ['regenerator', 'es6.blockScoping', 'es6.templateLiterals', 'es6.spec.symbols'];
+
 function onBuild(done) {
   return function(err, stats) {
     if (err) {
@@ -46,7 +49,7 @@ gulp.task('frontend-watch', function() {
 
 gulp.task('backend-build', function() {
   return gulp.src('src/**/*js')
-    .pipe(babel())
+    .pipe(babel({ blacklist: ioES6 }))
     .pipe(gulp.dest('dist'));
 });
 

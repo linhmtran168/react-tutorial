@@ -1,6 +1,6 @@
 'use strict';
 
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj['default'] : obj; };
+var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
 
 /**
  * This file provided by Facebook is for non-commercial testing and evaluation purposes only.
@@ -16,35 +16,35 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj['defau
 
 var _fs = require('fs');
 
-var fs = _interopRequire(_fs);
+var _fs2 = _interopRequireWildcard(_fs);
 
 var _path = require('path');
 
-var path = _interopRequire(_path);
+var _path2 = _interopRequireWildcard(_path);
 
 var _express = require('express');
 
-var express = _interopRequire(_express);
+var _express2 = _interopRequireWildcard(_express);
 
 var _bodyParser = require('body-parser');
 
-var bodyParser = _interopRequire(_bodyParser);
+var _bodyParser2 = _interopRequireWildcard(_bodyParser);
 
 var _debug = require('debug');
 
-var debug = _interopRequire(_debug);
+var _debug2 = _interopRequireWildcard(_debug);
 
-var app = express();
-var error = debug('app:error');
+let app = _express2['default']();
+let error = _debug2['default']('app:error');
 
 app.set('port', process.env.PORT || 3000);
 
-app.use('/', express['static'](path.join(__dirname, 'public')));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/', _express2['default']['static'](_path2['default'].join(__dirname, '../public')));
+app.use(_bodyParser2['default'].json());
+app.use(_bodyParser2['default'].urlencoded({ extended: true }));
 
 app.get('/comments.json', function (req, res) {
-  fs.readFile('comments.json', function (err, data) {
+  _fs2['default'].readFile('comments.json', function (err, data) {
     if (err) {
       error(err.stack);
     }
@@ -55,14 +55,14 @@ app.get('/comments.json', function (req, res) {
 });
 
 app.post('/comments.json', function (req, res) {
-  fs.readFile('comments.json', function (err, data) {
+  _fs2['default'].readFile('comments.json', function (err, data) {
     if (err) {
       error(err.stack);
     }
 
-    var comments = JSON.parse(data);
+    let comments = JSON.parse(data);
     comments.push(req.body);
-    fs.writeFile('comments.json', JSON.stringify(comments, null, 4), function (err) {
+    _fs2['default'].writeFile('comments.json', JSON.stringify(comments, null, 4), function (err) {
       if (err) {
         error(err.stack);
       }
